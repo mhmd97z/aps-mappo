@@ -123,15 +123,15 @@ class ApsRunner(Runner):
         active_masks[dones == True] = np.zeros(((dones == True).sum(), 1), dtype=np.float32)
         active_masks[dones_env == True] = np.ones(((dones_env == True).sum(), self.num_agents, 1), dtype=np.float32)
 
-        bad_masks = np.array([[[0.0] if info[agent_id]['bad_transition'] else [1.0] for agent_id in range(self.num_agents)] for info in infos])
+        # bad_masks = np.array([[[0.0] if info[agent_id]['bad_transition'] else [1.0] for agent_id in range(self.num_agents)] for info in infos])
         
         if not self.use_centralized_V:
             share_obs = obs
         for agent_id in range(self.num_agents):
             self.buffer[agent_id].insert(share_obs[:,agent_id], obs[:,agent_id], rnn_states[:,agent_id],
                     rnn_states_critic[:,agent_id],actions[:,agent_id], action_log_probs[:,agent_id],
-                    values[:,agent_id], rewards[:,agent_id], masks[:,agent_id], bad_masks[:,agent_id], 
-                    active_masks[:,agent_id], available_actions[:,agent_id])
+                    values[:,agent_id], rewards[:,agent_id], masks[:,agent_id], 
+                    active_masks=active_masks[:,agent_id], available_actions=available_actions[:,agent_id])
 
     @torch.no_grad()
     def eval(self, total_num_steps):
