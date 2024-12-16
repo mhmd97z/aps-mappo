@@ -197,15 +197,13 @@ def main(args):
     }
 
     # run experiments
-    all_args.share_policy = True
     if all_args.share_policy:
         from onpolicy.runner.shared.aps_runner import ApsRunner as Runner
     else:
-        raise
-        # from onpolicy.runner.separated.smac_runner import SMACRunner as Runner
+        from onpolicy.runner.separated.aps_runner import ApsRunner as Runner
 
-    # if all_args.algorithm_name == "happo" or all_args.algorithm_name == "hatrpo":
-    #     from onpolicy.runner.separated.smac_runner import SMACRunner as Runner
+    if all_args.algorithm_name == "happo" or all_args.algorithm_name == "hatrpo":
+        from onpolicy.runner.separated.aps_runner import ApsRunner as Runner
 
     runner = Runner(config)
     runner.run()
