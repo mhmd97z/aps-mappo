@@ -50,8 +50,7 @@ class ApsRunner(Runner):
             if episode % self.log_interval == 0:
                 end = time.time()
                 print("\n Algo {} Exp {} updates {}/{} episodes, total num timesteps {}/{}, FPS {}.\n"
-                        .format(self.all_args.map_name,
-                                self.algorithm_name,
+                        .format(self.algorithm_name,
                                 self.experiment_name,
                                 episode,
                                 episodes,
