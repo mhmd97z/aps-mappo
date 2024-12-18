@@ -28,7 +28,7 @@ class NetworkSimulator:
             from onpolicy.envs.aps.lib.power_control import OlpGnnPowerControl
             self.power_control = OlpGnnPowerControl(self.scenario_conf)
         elif self.scenario_conf.precoding_algorithm == "mrt" or self.scenario_conf.precoding_algorithm == "optimal":
-            from onpolicy.envs.lib.power_control import MrtPowerControl
+            from onpolicy.envs.aps.lib.power_control import MrtPowerControl
             self.power_control = MrtPowerControl(self.scenario_conf)
         else:
             raise NotImplementedError()

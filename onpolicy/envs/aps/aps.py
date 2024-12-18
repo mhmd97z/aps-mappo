@@ -117,15 +117,26 @@ class Aps(gym.Env):
             if self.env_args.simulation_scenario.if_power_in_db:
                 consumed_power = 10 * torch.log10(consumed_power)
                 consumed_power = torch.clip(consumed_power, min=-30) + 31
-            if self.env_args.if_use_local_power_sum:
+
+            if self.env_args.if_use_local_power_sum and not self.env_args.if_full_cooperation:
                 consumed_power = consumed_power.sum(dim=0, keepdim=True).expand_as(consumed_power)
             power_coef_cost = mu * torch.reshape(consumed_power, (-1, 1))
-            power_coef_cost += mu * serving_mask.reshape(power_coef_cost.shape).to(power_coef_cost)
+
+            if self.env_args.if_connection_cost and not self.env_args.if_full_cooperation:
+                power_coef_cost += mu * serving_mask.reshape(power_coef_cost.shape).to(power_coef_cost)
+
+            if self.env_args.if_full_cooperation:
+                power_coef_cost.fill_(power_coef_cost.sum())
 
             # se cost
             eta = self.env_args.se_coef
             threshold = self.env_args.sinr_threshold
-            constraints = (simulator_info['sinr'] - threshold)
+            if self.env_args.if_full_cooperation:
+                constraints = simulator_info['sinr'].clone()
+                constraints.fill_(simulator_info['sinr'].min() - threshold)
+            else:
+                constraints = (simulator_info['sinr'] - threshold)
+                
             if self.env_args.barrier_function == 'exponential':
                 se_violation_cost = torch.clip(torch.exp(-eta * constraints), max=500) # / (measurement_mask.sum(dim=0) + 1)
                 se_violation_cost = se_violation_cost.expand(self.num_aps, -1).clone()
