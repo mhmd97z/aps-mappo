@@ -16,7 +16,6 @@ from onpolicy.config import get_config
 from onpolicy.envs.env_wrappers import ShareDummyVecEnv, ApsSubprocVecEnv
 from onpolicy.envs.aps.aps import Aps
 
-"""Train script for SMAC."""
 
 def make_train_env(all_args):
     def get_env_fn(rank):

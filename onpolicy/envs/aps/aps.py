@@ -82,10 +82,9 @@ class Aps(gym.Env):
         else:
             # graphs = simulator_info['graph']
             channel_coef = simulator_info['channel_coef']
-
             # TODO: aggregate over step length
             # self.datastore.add(obs=graphs[0])
-            self.datastore.add(obs=channel_coef)
+            self.datastore.add(obs=channel_coef.mean(dim=0))
 
             G = self.datastore.get_last_k_elements()['obs']
             # TODO: aggregate over history
@@ -113,7 +112,7 @@ class Aps(gym.Env):
         elif self.env_args.reward == 'se_requirement':
             # power cost
             mu = self.env_args.power_coef
-            consumed_power = torch.abs(simulator_info['power_coef']).squeeze(dim=0)
+            consumed_power = torch.abs(simulator_info['power_coef']).mean(dim=0)
             if self.env_args.simulation_scenario.if_power_in_db:
                 consumed_power = 10 * torch.log10(consumed_power)
                 consumed_power = torch.clip(consumed_power, min=-30) + 31
@@ -132,11 +131,11 @@ class Aps(gym.Env):
             eta = self.env_args.se_coef
             threshold = self.env_args.sinr_threshold
             if self.env_args.if_full_cooperation:
-                constraints = simulator_info['sinr'].clone()
+                constraints = simulator_info['sinr'].clone().mean(dim=0)
                 constraints.fill_(simulator_info['sinr'].min() - threshold)
             else:
-                constraints = (simulator_info['sinr'] - threshold)
-                
+                constraints = (simulator_info['sinr'] - threshold).mean(dim=0)
+
             if self.env_args.barrier_function == 'exponential':
                 se_violation_cost = torch.clip(torch.exp(-eta * constraints), max=500) # / (measurement_mask.sum(dim=0) + 1)
                 se_violation_cost = se_violation_cost.expand(self.num_aps, -1).clone()
@@ -159,7 +158,7 @@ class Aps(gym.Env):
             .flatten().to(torch.int32).unsqueeze(1)
 
         info = {
-            'min_sinr': simulator_info['sinr'].min().mean(),
+            'min_sinr': simulator_info['sinr'].mean(dim=0).min().mean(),
             'mean_sinr': simulator_info['sinr'].mean(),
             'totoal_power_consumption': simulator_info['totoal_power_consumption'].mean(),
             'reward': reward.mean(),
