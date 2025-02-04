@@ -165,6 +165,10 @@ class Aps(gym.Env):
             'mean_serving_ap_count': serving_mask.reshape((self.num_aps, self.num_ues)).sum(dim=0).float().mean(),
             'se_violation_cost': se_violation_cost.mean(),
             'power_coef_cost': power_coef_cost.mean(),
+            'ue_x': self.simulator.channel_manager.loc_ues[0],
+            'ue_y': self.simulator.channel_manager.loc_ues[1],
+            'ap_x': self.simulator.channel_manager.loc_aps[0],
+            'ap_y': self.simulator.channel_manager.loc_aps[1]
         }
 
         return obs.cpu().numpy(), state.cpu().numpy(), reward.cpu().numpy(), mask.cpu().numpy(), info
