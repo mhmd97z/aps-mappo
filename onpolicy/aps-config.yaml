@@ -21,12 +21,12 @@ env_args:
 
   simulation_scenario:
     if_use_cuda_sim: True
-    step_length: 5
+    step_length: 10
     morphology: urban
-    number_of_ues: 2
-    number_of_aps: 10
-    max_serving_ue_count: 2
-    max_measurment_ap_count: 10
+    number_of_ues: 6
+    number_of_aps: 30
+    max_serving_ue_count: 6
+    max_measurment_ap_count: 30
     power_control_saved_model: /home/mzi/aps-mappo/onpolicy/envs/aps/lib/gnn_olp/trained_model/checkpoints/best_epoch=953.ckpt
     data_normalization_config: /home/mzi/aps-mappo/onpolicy/envs/aps/lib/gnn_olp/normalization_config.yaml
     precoding_algorithm: olp # olp, mrt, optimal
@@ -35,3 +35,17 @@ env_args:
     ap_radiation_power: 0.2
     if_sinr_in_db: True
     if_power_in_db: True
+    ue_mobility_type: pedestrain # pedestrain, vehicle
+    # mean_vehicle_speed: 10
+    # mean_pedestrian_speed: 3
+    # mean_pedestrian_movement_duration: 3
+    # mean_pedestrian_movement_pause: 3
+
+
+# time space
+## T_c: channel update [according to coherence time: 1ms]
+## T_p: power control [is it realsitic to be 1ms?] 
+### [if it's more than 1ms, (1) the power adaptation will be slow, causing lower sinr, 
+###                         (2) we're changing the dynamics of the problem at hand, making it more difficult to predict the sinr]]
+## T_a: AP selection [it definitely can't be 1ms, but 
+###                   what's the tradeoff between higher and lower frequencies?]
