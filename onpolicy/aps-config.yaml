@@ -21,7 +21,7 @@ env_args:
 
   simulation_scenario:
     if_use_cuda_sim: True
-    step_length: 10
+    step_length: 20
     morphology: urban
     number_of_ues: 6
     number_of_aps: 20
@@ -35,7 +35,8 @@ env_args:
     ap_radiation_power: 0.2
     if_sinr_in_db: True
     if_power_in_db: True
-    ue_mobility_type: pedestrain # pedestrain, vehicle
+    ue_mobility_type: vehicular # pedestrain, vehicular
+    simulation_timestep: 50 # 50 ms
     # mean_vehicle_speed: 10
     # mean_pedestrian_speed: 3
     # mean_pedestrian_movement_duration: 3
