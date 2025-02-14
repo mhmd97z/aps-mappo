@@ -73,6 +73,45 @@ def k_aps(obs, k=1, config=None, largest=True, random=False):
     return mask
 
 
+# def k_aps(obs, k=1, config=None, largest=True, random=False):
+#     assert ~config.env_args.use_gnn_embedding
+#     n_ue = config.env_args.simulation_scenario.number_of_ues
+#     n_ap = config.env_args.simulation_scenario.number_of_aps
+#     ap_capacity = config.env_args.simulation_scenario.max_serving_ue_count
+#     ue_requirement = k
+#     n_env = obs.shape[0]
+#     assert n_ue * n_ap == obs.shape[1]
+    
+#     serving_mask = torch.zeros(n_env, n_ap, n_ue)
+#     random = False
+#     largest = True
+
+#     if random:
+#         indices = generate_non_repetitive_randint_tensor(
+#             batch=n_envs, rows=k, cols=n_ues, max_val=n_aps).to(device=obs.device)
+#     else:
+#         channel = torch.tensor(obs[:, :, 0]).view(-1, n_ap, n_ue)
+#         indices = torch.stack(torch.meshgrid(torch.arange(n_ap), torch.arange(n_ue)), dim=-1).reshape(-1, 2).repeat(n_env, 1, 1)
+#         values = channel.reshape(n_env, -1, 1)
+#         concatenated = torch.cat((indices, values), dim=2)
+#         concatenated_flattened = concatenated.reshape(n_env, -1, 3)
+
+#         for env_i in range(n_env):
+#             sorted_indices = torch.argsort(concatenated_flattened[env_i, :, -1], descending=True)
+#             sorted_concatenated_flattened = concatenated_flattened[env_i, sorted_indices]
+#             per_ap_count = torch.zeros(n_ap)
+#             per_ue_count = torch.zeros(n_ue)
+#             for ap, ue, _ in sorted_concatenated_flattened:
+#                 ap = int(ap)
+#                 ue = int(ue)
+#                 if per_ap_count[ap] < ap_capacity and per_ue_count[ue] < ue_requirement:
+#                     serving_mask[env_i, ap, ue] = 1
+#                     per_ap_count[ap] += 1
+#                     per_ue_count[ue] += 1
+
+#     return serving_mask
+
+
 if __name__ == '__main__':
     if mp.get_start_method(allow_none=True) != 'spawn':
         mp.set_start_method('spawn', force=True)
@@ -142,7 +181,7 @@ if __name__ == '__main__':
         total_num_steps = (episode + 1) * episode_length * n_rollout_threads
 
         if episode % log_interval == 0:
-            print("total_num_steps: ", total_num_steps)
+            # print("total_num_steps: ", total_num_steps)
             env_infos = stack_list_dict_tensor(env_infos)
             for key, value in env_infos.items():
                 if len(value)>0:
