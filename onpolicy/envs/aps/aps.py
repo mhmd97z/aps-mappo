@@ -146,8 +146,6 @@ class Aps(gym.Env):
                 se_violation_cost = torch.clip(torch.exp(-eta * constraints), max=500) # / (measurement_mask.sum(dim=0) + 1)
                 se_violation_cost = se_violation_cost.expand(self.num_aps, -1).clone()
                 se_violation_cost = torch.reshape(se_violation_cost, (-1, 1))
-            elif self.env_args.barrier_function == 'step':
-                se_violation_cost = beta * (constraints < 0).float()
             else:
                 NotImplementedError
 
@@ -163,9 +161,23 @@ class Aps(gym.Env):
         mask = self.simulator.channel_manager.measurement_mask.clone().detach() \
             .flatten().to(torch.int32).unsqueeze(1)
 
+        row_min = simulator_info['sinr'].min(dim=1).values
+        row_mean = simulator_info['sinr'].mean(dim=1)
+        truncated_sinr_normalized_diff = ((row_mean-row_min)/row_mean).mean()
+        truncated_sinr_std = simulator_info['sinr'].std(dim=1, unbiased=False).mean()
+
+        row_min = simulator_info['clean_sinr'].min(dim=1).values
+        row_mean = simulator_info['clean_sinr'].mean(dim=1)
+        clean_sinr_normalized_diff = ((row_mean-row_min)/row_mean).mean()
+        clean_sinr_std = simulator_info['clean_sinr'].std(dim=1, unbiased=False).mean()
+
         info = {
             'min_sinr': simulator_info['sinr'].mean(dim=0).min().mean(),
             'mean_sinr': simulator_info['sinr'].mean(),
+            'truncated_sinr_normalized_diff': truncated_sinr_normalized_diff,
+            'truncated_sinr_std': truncated_sinr_std,
+            'clean_sinr_normalized_diff': clean_sinr_normalized_diff,
+            'clean_sinr_std': clean_sinr_std,
             'transmission_power_consumption': transmission_power_consumption.sum(),
             'circuit_power_consumption': ap_circuit_power_consumption.sum(),
             'totoal_power_consumption': transmission_power_consumption.sum() + ap_circuit_power_consumption.sum(),

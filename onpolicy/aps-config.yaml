@@ -24,9 +24,9 @@ env_args:
     step_length: 20
     morphology: urban
     number_of_ues: 6
-    number_of_aps: 20
+    number_of_aps: 32
     max_serving_ue_count: 6
-    max_measurment_ap_count: 20
+    max_measurment_ap_count: 32
     power_control_saved_model: /home/mzi/aps-mappo/onpolicy/envs/aps/lib/gnn_olp/trained_model/checkpoints/best_epoch=953.ckpt
     data_normalization_config: /home/mzi/aps-mappo/onpolicy/envs/aps/lib/gnn_olp/normalization_config.yaml
     precoding_algorithm: olp # olp, mrt, optimal

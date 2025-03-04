@@ -24,7 +24,7 @@ class NetworkSimulator:
                                              'sinr', 'embedding',
                                              'ap_circuit_power_consumption',
                                              'transmission_power_consumption',
-                                             'graph'])
+                                             'graph', 'clean_sinr'])
         if self.scenario_conf.precoding_algorithm == "olp":
             from onpolicy.envs.aps.lib.power_control import OlpGnnPowerControl
             self.power_control = OlpGnnPowerControl(self.scenario_conf)
@@ -79,9 +79,10 @@ class NetworkSimulator:
             ap_circuit_power_consumption = self.power_control.get_ap_circuit_power(self.serving_mask)
             # calc sinr with full channel info and the maked allocated power
             sinr = self.power_control.calcualte_sinr(G, rho_d, masked_allocated_power)
+            clean_sinr = self.power_control.calcualte_sinr(G, rho_d, allocated_power)
             # store the info
             self.datastore.add(channel_coef=masked_G, power_coef=masked_allocated_power, 
-                               embedding=embedding, sinr=sinr,
+                               embedding=embedding, sinr=sinr, clean_sinr=clean_sinr,
                                transmission_power_consumption=transmission_power_consumption,
                                ap_circuit_power_consumption=ap_circuit_power_consumption,
                                graph=graph)   # add to the data store
