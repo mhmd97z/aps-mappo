@@ -136,7 +136,7 @@ if __name__ == '__main__':
     episode_length = all_args.episode_length
     n_rollout_threads = all_args.n_rollout_threads
     episodes = int(num_env_steps) // episode_length // n_rollout_threads
-    
+
     # parsing device and type
     torch.set_num_threads(n_training_threads)
 
@@ -164,7 +164,7 @@ if __name__ == '__main__':
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     writer = SummaryWriter(log_dir)
-    
+
     # enabling parallel env execution
     envs = make_train_env(all_args)
     print("envs are generated", flush=True)
@@ -186,5 +186,5 @@ if __name__ == '__main__':
             for key, value in env_infos.items():
                 if len(value)>0:
                     writer.add_scalars(key, {key: value.mean()}, total_num_steps)
-    
+
     writer.close()

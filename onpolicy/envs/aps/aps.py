@@ -102,13 +102,6 @@ class Aps(gym.Env):
             obs = x.clone()
             state = obs.view(-1, obs.shape[0]*obs.shape[1]).repeat(obs.shape[0], 1).clone()
 
-        # reward calc
-        # normalized_total_power_consumption = range_normalization(simulator_info['totoal_power_consumption'], 1, 5) # assumed range of power: 1, 5
-        # if self.env_args.reward == 'weighted_sum':
-        #     normalized_min_sinr = range_normalization(simulator_info['sinr'].min(), -75., 25.) # assumed range of min_sinr: -75, 25
-        #     alpha = self.env_args.reward_power_consumption_coef
-        #     reward_ = ((1 - alpha) * normalized_min_sinr - alpha * normalized_total_power_consumption).mean()
-
         if self.env_args.reward == 'se_requirement':
             # power cost
             mu = self.env_args.power_coef
@@ -153,7 +146,8 @@ class Aps(gym.Env):
                 reward = -(se_violation_cost + power_coef_cost).clone().detach()
             else:
                 reward = - se_violation_cost.clone().detach()
-                reward[se_violation_cost < 5.] = - power_coef_cost[se_violation_cost < 5.].clone().detach()
+                reward[se_violation_cost < float(self.env_args.sec_to_pc_switch_threshold)] = \
+                    - power_coef_cost[se_violation_cost < float(self.env_args.sec_to_pc_switch_threshold)].clone().detach()
 
         else:
             raise NotImplementedError
@@ -161,22 +155,13 @@ class Aps(gym.Env):
         mask = self.simulator.channel_manager.measurement_mask.clone().detach() \
             .flatten().to(torch.int32).unsqueeze(1)
 
-        row_min = simulator_info['sinr'].min(dim=1).values
-        row_mean = simulator_info['sinr'].mean(dim=1)
-        truncated_sinr_normalized_diff = ((row_mean-row_min)/row_mean).mean()
         truncated_sinr_std = simulator_info['sinr'].std(dim=1, unbiased=False).mean()
-
-        row_min = simulator_info['clean_sinr'].min(dim=1).values
-        row_mean = simulator_info['clean_sinr'].mean(dim=1)
-        clean_sinr_normalized_diff = ((row_mean-row_min)/row_mean).mean()
         clean_sinr_std = simulator_info['clean_sinr'].std(dim=1, unbiased=False).mean()
 
         info = {
             'min_sinr': simulator_info['sinr'].mean(dim=0).min().mean(),
             'mean_sinr': simulator_info['sinr'].mean(),
-            'truncated_sinr_normalized_diff': truncated_sinr_normalized_diff,
             'truncated_sinr_std': truncated_sinr_std,
-            'clean_sinr_normalized_diff': clean_sinr_normalized_diff,
             'clean_sinr_std': clean_sinr_std,
             'transmission_power_consumption': transmission_power_consumption.sum(),
             'circuit_power_consumption': ap_circuit_power_consumption.sum(),
@@ -185,14 +170,8 @@ class Aps(gym.Env):
             'reward': reward.mean(),
             'mean_serving_ap_count': serving_mask.reshape((self.num_aps, self.num_ues)).sum(dim=0).float().mean(),
             'mean_served_ue_count': serving_mask.reshape((self.num_aps, self.num_ues)).sum(dim=1).float().mean(),
-            # 'max_served_ue_count': serving_mask.reshape((self.num_aps, self.num_ues)).sum(dim=1).float().max(),
-            # 'mode_served_ue_count': serving_mask.reshape((self.num_aps, self.num_ues)).sum(dim=1).float().median(),
             'se_violation_cost': se_violation_cost.mean(),
             'power_coef_cost': power_coef_cost.mean(),
-            # 'ue_x': self.simulator.channel_manager.loc_ues[0],
-            # 'ue_y': self.simulator.channel_manager.loc_ues[1],
-            # 'ap_x': self.simulator.channel_manager.loc_aps[0],
-            # 'ap_y': self.simulator.channel_manager.loc_aps[1]
         }
 
         return obs.cpu().numpy(), state.cpu().numpy(), reward.cpu().numpy(), mask.cpu().numpy(), info
